@@ -1,0 +1,42 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "df1203"
+		},
+		"LS_AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"LS_OracleDB_Dept_DESTN_connectionString": {
+			"value": ""
+		},
+		"LS_error_Log_CSVTODB_connectionString": {
+			"value": ""
+		},
+		"Ls_AzureSynapseAnalyticsDW_connectionString": {
+			"value": ""
+		},
+		"Ls_DLStorage_Gen2_output_accountKey": {
+			"value": ""
+		},
+		"Ls_FileSystemSource_password": {
+			"value": ""
+		},
+		"Ls_oracledb_source_connectionString": {
+			"value": ""
+		},
+		"LS_AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://gen2storage1203.dfs.core.windows.net"
+		},
+		"Ls_DLStorage_Gen2_output_properties_typeProperties_url": {
+			"value": "https://gen2storage1203.dfs.core.windows.net"
+		},
+		"Ls_FileSystemSource_properties_typeProperties_host": {
+			"value": "G:\\Azure"
+		},
+		"Ls_FileSystemSource_properties_typeProperties_userId": {
+			"value": "rrohitjain12@gmail.com"
+		}
+	}
+}
