@@ -1,0 +1,49 @@
+{
+	"name": "WindowDF",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ITEmployeesSCR",
+						"type": "DatasetReference"
+					},
+					"name": "ITEmployee"
+				},
+				{
+					"dataset": {
+						"referenceName": "Execute_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "ExecuteEmployee"
+				},
+				{
+					"dataset": {
+						"referenceName": "ShippingEmployee",
+						"type": "DatasetReference"
+					},
+					"name": "ShippingEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "DeptWiseSalaryRank"
+				}
+			],
+			"transformations": [
+				{
+					"name": "UnionEmpolyee"
+				},
+				{
+					"name": "Window"
+				}
+			],
+			"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tDEPARTMENT_NAME as string,\n\t\tCOMMISSION_PCT as decimal(10,0)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> ITEmployee\nsource(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tCOMMISSION_PCT as decimal(10,0),\n\t\tDEPARTMENT_NAME as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> ExecuteEmployee\nsource(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tCOMMISSION_PCT as decimal(10,0),\n\t\tDEPARTMENT_NAME as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> ShippingEmp\nExecuteEmployee, ITEmployee, ShippingEmp union(byName: true)~> UnionEmpolyee\nUnionEmpolyee window(over(DEPARTMENT_NAME),\n\tasc(SALARY, true),\n\tDenseRank = denseRank()) ~> Window\nWindow sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['DeptWiseSalaryRank.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DeptWiseSalaryRank"
+		}
+	}
+}
