@@ -1,0 +1,51 @@
+{
+	"name": "Aggrregate_DF",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Employee_details",
+						"type": "DatasetReference"
+					},
+					"name": "Employees"
+				},
+				{
+					"dataset": {
+						"referenceName": "DEP_SCR_ADLS",
+						"type": "DatasetReference"
+					},
+					"name": "Departments"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "DepwiseTotSalary"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AggOnDeptwise"
+				},
+				{
+					"name": "DeptWiseSorting"
+				},
+				{
+					"name": "SequenceNo"
+				},
+				{
+					"name": "ReorderingCols"
+				},
+				{
+					"name": "LookupDeptName"
+				}
+			],
+			"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as decimal(10,0),\n\t\tCOMMISSION_PCT as decimal(10,0),\n\t\tMANAGER_ID as integer,\n\t\tDEPARTMENT_ID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpartitionBy('hash', 1)) ~> Employees\nsource(output(\n\t\tDEPARTMENT_ID as integer,\n\t\tDEPARTMENT_NAME as string,\n\t\tMANAGER_ID as integer,\n\t\tLOCATION_ID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> Departments\nEmployees aggregate(groupBy(DEPARTMENT_ID),\n\tDeptwiseTotal_Salary = sum(SALARY),\n\tpartitionBy('hash', 1)) ~> AggOnDeptwise\nAggOnDeptwise sort(asc(DEPARTMENT_ID, false),\n\tpartitionBy('hash', 1)) ~> DeptWiseSorting\nDeptWiseSorting keyGenerate(output(SNO as long),\n\tstartAt: 1L) ~> SequenceNo\nSequenceNo select(mapColumn(\n\t\tSno = SNO,\n\t\t{Department ID} = DEPARTMENT_ID,\n\t\t{DeptwiseTotal Salary} = DeptwiseTotal_Salary\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ReorderingCols\nReorderingCols, Departments lookup({Department ID} == DEPARTMENT_ID,\n\tmultiple: false,\n\tpickup: 'any',\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> LookupDeptName\nLookupDeptName sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['DepwiseTotSalary.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID = Sno,\n\t\tDEPARTMENT_ID = {Department ID},\n\t\tDEPARTMENT_NAME,\n\t\tSALARY = {DeptwiseTotal Salary}\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DepwiseTotSalary"
+		}
+	}
+}
