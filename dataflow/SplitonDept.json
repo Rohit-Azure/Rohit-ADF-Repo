@@ -21,24 +21,43 @@
 					"name": "ITEmpRecords"
 				},
 				{
-					"name": "sink2"
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "ExecuteEmpDetails"
 				},
 				{
-					"name": "sink3"
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "PurchaseEmpdetails"
 				},
 				{
-					"name": "sink4"
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "ShippingeEmpdetails"
 				},
 				{
-					"name": "sink5"
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "SalesEmpdetails"
 				}
 			],
 			"transformations": [
 				{
 					"name": "CondlSplitondep"
+				},
+				{
+					"name": "CommNVLReplace"
 				}
 			],
-			"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tCOMMISSION_PCT as double,\n\t\tDEPARTMENT_NAME as string,\n\t\tDEPARTMENT_ID7 as integer,\n\t\tDEPARTMENT_ID8 as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\trowUrlColumn: 'Source_File_path',\n\tpreferredIntegralType: 'integer',\n\tpartitionBy('hash', 1)) ~> EmpDeptSCR\nEmpDeptSCR split(equals(DEPARTMENT_NAME,'IT'),\n\tequals(DEPARTMENT_NAME,'Executive'),\n\tequals(DEPARTMENT_NAME, 'Purchasing'),\n\tequals(DEPARTMENT_NAME, 'Shipping'),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> CondlSplitondep@(IT, Executive, Purchasing, Shipping, Sales)\nCondlSplitondep@IT sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ITEmpRecords\nCondlSplitondep@Executive sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2\nCondlSplitondep@Purchasing sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink3\nCondlSplitondep@Shipping sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink4\nCondlSplitondep@Sales sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink5"
+			"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tCOMMISSION_PCT as double,\n\t\tDEPARTMENT_NAME as string,\n\t\tDEPARTMENT_ID7 as integer,\n\t\tDEPARTMENT_ID8 as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\trowUrlColumn: 'Source_File_path',\n\tpreferredIntegralType: 'integer',\n\tpartitionBy('hash', 1)) ~> EmpDeptSCR\nEmpDeptSCR split(equals(DEPARTMENT_NAME,'IT'),\n\tequals(DEPARTMENT_NAME,'Executive'),\n\tequals(DEPARTMENT_NAME, 'Purchasing'),\n\tequals(DEPARTMENT_NAME, 'Shipping'),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> CondlSplitondep@(IT, Executive, Purchasing, Shipping, Sales)\nCondlSplitondep@IT derive(COMMISSION_PCT = iifNull(COMMISSION_PCT, 10)) ~> CommNVLReplace\nCommNVLReplace sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['ITEmployee_Details.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tHIRE_DATE,\n\t\tSALARY,\n\t\tDEPARTMENT_NAME,\n\t\tCOMMISSION_PCT\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ITEmpRecords\nCondlSplitondep@Executive sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['ExecuteEmp_detail.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tHIRE_DATE,\n\t\tSALARY,\n\t\tCOMMISSION_PCT,\n\t\tDEPARTMENT_NAME\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ExecuteEmpDetails\nCondlSplitondep@Purchasing sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['PurchaseEmpdetails.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tHIRE_DATE,\n\t\tSALARY,\n\t\tCOMMISSION_PCT,\n\t\tDEPARTMENT_NAME\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PurchaseEmpdetails\nCondlSplitondep@Shipping sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['ShippingeEmpdetails.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tHIRE_DATE,\n\t\tSALARY,\n\t\tCOMMISSION_PCT,\n\t\tDEPARTMENT_NAME\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ShippingeEmpdetails\nCondlSplitondep@Sales sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesEmpdetails.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SalesEmpdetails"
 		}
 	}
 }
