@@ -1,0 +1,17 @@
+{
+	"name": "deptOracleDB_DESTN",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_OracleDB_Dept_DESTN",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "OracleTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "HR",
+			"table": "DEPTS_ADF"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

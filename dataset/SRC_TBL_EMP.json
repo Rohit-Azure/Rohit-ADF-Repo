@@ -1,0 +1,17 @@
+{
+	"name": "SRC_TBL_EMP",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Ls_oracledb_source",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "OracleTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "HR",
+			"table": "EMPLOYEES"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

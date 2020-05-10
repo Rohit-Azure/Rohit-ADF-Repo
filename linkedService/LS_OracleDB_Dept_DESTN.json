@@ -1,0 +1,16 @@
+{
+	"name": "LS_OracleDB_Dept_DESTN",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "Oracle",
+		"typeProperties": {
+			"connectionString": "host=DESKTOP-SFQNVFA;port=1521;sid=XE;user id=HR",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJmNWE1N2UyOC1jNzE1LTRmODMtODZhYi0zZjYxYzE0MGY4NmUiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "OnpermisesSelfHostedIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

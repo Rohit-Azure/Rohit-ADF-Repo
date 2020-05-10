@@ -1,0 +1,158 @@
+{
+	"name": "SourceDataset_1es",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Ls_AzureSynapseAnalyticsDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "ProductKey",
+				"type": "int"
+			},
+			{
+				"name": "ProductAlternateKey",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductSubcategoryKey",
+				"type": "int"
+			},
+			{
+				"name": "WeightUnitMeasureCode",
+				"type": "nchar"
+			},
+			{
+				"name": "SizeUnitMeasureCode",
+				"type": "nchar"
+			},
+			{
+				"name": "EnglishProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SpanishProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FrenchProductName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "StandardCost",
+				"type": "money"
+			},
+			{
+				"name": "FinishedGoodsFlag",
+				"type": "bit"
+			},
+			{
+				"name": "Color",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SafetyStockLevel",
+				"type": "smallint"
+			},
+			{
+				"name": "ReorderPoint",
+				"type": "smallint"
+			},
+			{
+				"name": "ListPrice",
+				"type": "money"
+			},
+			{
+				"name": "Size",
+				"type": "nvarchar"
+			},
+			{
+				"name": "SizeRange",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Weight",
+				"type": "float"
+			},
+			{
+				"name": "DaysToManufacture",
+				"type": "int"
+			},
+			{
+				"name": "ProductLine",
+				"type": "nchar"
+			},
+			{
+				"name": "DealerPrice",
+				"type": "money"
+			},
+			{
+				"name": "Class",
+				"type": "nchar"
+			},
+			{
+				"name": "Style",
+				"type": "nchar"
+			},
+			{
+				"name": "ModelName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EnglishDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FrenchDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ChineseDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ArabicDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "HebrewDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ThaiDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "GermanDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "JapaneseDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TurkishDescription",
+				"type": "nvarchar"
+			},
+			{
+				"name": "StartDate",
+				"type": "datetime"
+			},
+			{
+				"name": "EndDate",
+				"type": "datetime"
+			},
+			{
+				"name": "Status",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DimProduct"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
