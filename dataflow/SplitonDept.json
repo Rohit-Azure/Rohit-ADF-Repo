@@ -1,0 +1,44 @@
+{
+	"name": "SplitonDept",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpDeptAll_DS",
+						"type": "DatasetReference"
+					},
+					"name": "EmpDeptSCR"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "ITEmpRecords"
+				},
+				{
+					"name": "sink2"
+				},
+				{
+					"name": "sink3"
+				},
+				{
+					"name": "sink4"
+				},
+				{
+					"name": "sink5"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CondlSplitondep"
+				}
+			],
+			"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tHIRE_DATE as string,\n\t\tSALARY as integer,\n\t\tCOMMISSION_PCT as double,\n\t\tDEPARTMENT_NAME as string,\n\t\tDEPARTMENT_ID7 as integer,\n\t\tDEPARTMENT_ID8 as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\trowUrlColumn: 'Source_File_path',\n\tpreferredIntegralType: 'integer',\n\tpartitionBy('hash', 1)) ~> EmpDeptSCR\nEmpDeptSCR split(equals(DEPARTMENT_NAME,'IT'),\n\tequals(DEPARTMENT_NAME,'Executive'),\n\tequals(DEPARTMENT_NAME, 'Purchasing'),\n\tequals(DEPARTMENT_NAME, 'Shipping'),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> CondlSplitondep@(IT, Executive, Purchasing, Shipping, Sales)\nCondlSplitondep@IT sink(input(\n\t\tEMPLOYEE_ID as string,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as string,\n\t\tJOB_ID as string,\n\t\tSALARY as string,\n\t\tCOMMISSION_PCT as string,\n\t\tMANAGER_ID as string,\n\t\tDEPARTMENT_ID as string,\n\t\tDEPARTMENT_NAME as string,\n\t\tLOCATION_ID as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> ITEmpRecords\nCondlSplitondep@Executive sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2\nCondlSplitondep@Purchasing sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink3\nCondlSplitondep@Shipping sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink4\nCondlSplitondep@Sales sink(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink5"
+		}
+	}
+}
