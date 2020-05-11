@@ -12,13 +12,21 @@
 					"name": "FinancialYearSizeBands"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Output_ADL_Target_DS",
+						"type": "DatasetReference"
+					},
+					"name": "PivotFinancialdata"
+				}
+			],
 			"transformations": [
 				{
 					"name": "Pivot1"
 				}
 			],
-			"script": "source(output(\n\t\tyear as integer,\n\t\tindustry_code_ANZSIC as string,\n\t\tindustry_name_ANZSIC as string,\n\t\trme_size_grp as string,\n\t\tvariable as string,\n\t\tvalue as integer,\n\t\tunit as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> FinancialYearSizeBands\nFinancialYearSizeBands pivot(groupBy(industry_name_ANZSIC),\n\tpivotBy(variable),\n\tSum_of_Variable = sum(value),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1"
+			"script": "source(output(\n\t\tyear as integer,\n\t\tindustry_code_ANZSIC as string,\n\t\tindustry_name_ANZSIC as string,\n\t\trme_size_grp as string,\n\t\tvariable as string,\n\t\tvalue as integer,\n\t\tunit as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> FinancialYearSizeBands\nFinancialYearSizeBands pivot(groupBy(industry_name_ANZSIC),\n\tpivotBy(variable),\n\tSum_of_Variable = sum(value),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1\nPivot1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PivotFinancialdata"
 		}
 	}
 }
