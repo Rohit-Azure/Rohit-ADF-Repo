@@ -20,6 +20,10 @@
 		"type": "Oracle",
 		"typeProperties": {
 			"connectionString": "host=@{linkedService().ServerName};port=1521;sid=@{linkedService().DBName};user id=@{linkedService().UserName};Password=@{linkedService().Password}"
+		},
+		"connectVia": {
+			"referenceName": "OnpermisesSelfHostedIR",
+			"type": "IntegrationRuntimeReference"
 		}
 	}
 }
