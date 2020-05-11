@@ -1,0 +1,41 @@
+{
+	"name": "Parameterized_trigger_Copy_Locations",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "ParamterizedPipeline1",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"ServerName": "localhost",
+					"DBName": "XE",
+					"UserName": "HR",
+					"Password": "Rohit123",
+					"SourceTBLName": "LOCATIONS",
+					"DestinationTBLName": "LOCATIONS_ADF"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2020-05-11T09:03:00.000Z",
+				"endTime": "2020-05-12T09:03:00.000Z",
+				"timeZone": "UTC",
+				"schedule": {
+					"minutes": [
+						0
+					],
+					"hours": [
+						15
+					]
+				}
+			}
+		}
+	}
+}
