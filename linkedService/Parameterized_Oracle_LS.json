@@ -1,0 +1,29 @@
+{
+	"name": "Parameterized_Oracle_LS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"ServerName": {
+				"type": "string"
+			},
+			"DBName": {
+				"type": "string"
+			},
+			"UserName": {
+				"type": "string"
+			},
+			"Password": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Oracle",
+		"typeProperties": {
+			"connectionString": "host=@{linkedService().ServerName};port=1521;sid=@{linkedService().DBName};user id=@{linkedService().UserName};Password=@{linkedService().Password}"
+		},
+		"connectVia": {
+			"referenceName": "OnpermisesSelfHostedIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
