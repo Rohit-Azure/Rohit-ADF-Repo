@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Employee_details111.csv",
+				"fileName": "Employee_details.csv",
 				"fileSystem": "gen2blobcontainer"
 			},
 			"columnDelimiter": ",",
