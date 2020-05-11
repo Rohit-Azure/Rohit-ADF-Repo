@@ -181,6 +181,42 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "SendFailureMail",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata1",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": "https://prod-02.centralindia.logic.azure.com:443/workflows/a43625c1f867448b9c3469a20332b405/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zHrJICREgQ-CDFFUmNtnKIfF8GFtwfIdFCdQv4qjypo",
+								"method": "POST",
+								"headers": {
+									"Content-Type": "Application/json"
+								},
+								"body": {
+									"DataFactoryName": "@{pipeline().DataFactory}",
+									"PipelineName": "@{pipeline().Pipeline}",
+									"Subject": "An error has occurred!",
+									"ErrorMessage": "The ADF pipeline has crashed! Please check the logs.",
+									"EmailTo": "Rohit.Jain@nttdata.com"
+								},
+								"linkedServices": [],
+								"datasets": []
+							}
 						}
 					]
 				}
