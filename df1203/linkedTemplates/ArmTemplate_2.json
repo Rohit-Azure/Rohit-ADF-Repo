@@ -1,0 +1,542 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df1203"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName": {
+			"type": "string",
+			"defaultValue": "localhost"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName": {
+			"type": "string",
+			"defaultValue": "XE"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName": {
+			"type": "string",
+			"defaultValue": "HR"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password": {
+			"type": "string",
+			"defaultValue": "rohit123"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS_ADF"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ORCL_DB_TO_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DB_TO_ADLS",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "OracleSource",
+								"partitionOption": "None",
+								"queryTimeout": "02:00:00"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "EMPLOYEE_ID",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "EMPLOYEE_ID",
+											"type": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "FIRST_NAME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "FIRST_NAME",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LAST_NAME",
+											"type": "String"
+										},
+										"sink": {
+											"name": "LAST_NAME",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "EMAIL",
+											"type": "String"
+										},
+										"sink": {
+											"name": "EMAIL",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "PHONE_NUMBER",
+											"type": "String"
+										},
+										"sink": {
+											"name": "PHONE_NUMBER",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HIRE_DATE",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "HIRE_DATE",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "JOB_ID",
+											"type": "String"
+										},
+										"sink": {
+											"name": "JOB_ID",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SALARY",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "SALARY",
+											"type": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "COMMISSION_PCT",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "COMMISSION_PCT",
+											"type": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "MANAGER_ID",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "MANAGER_ID",
+											"type": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "DEPARTMENT_ID",
+											"type": "Decimal"
+										},
+										"sink": {
+											"name": "DEPARTMENT_ID",
+											"type": "Decimal"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SRC_TBL_EMP",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Employee_details",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ParamterizedPipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CopyDataFromOneTBLtoAnother",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "DB_TableLocations"
+							},
+							{
+								"name": "Destination",
+								"value": "DB_Table_LOCATIONS_ADF"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "OracleSource",
+								"partitionOption": "None",
+								"queryTimeout": "02:00:00"
+							},
+							"sink": {
+								"type": "OracleSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "Parameterized_Oracle_DS",
+								"type": "DatasetReference",
+								"parameters": {
+									"ServerName": {
+										"value": "@pipeline().parameters.ServerName",
+										"type": "Expression"
+									},
+									"DBName": {
+										"value": "@pipeline().parameters.DBName",
+										"type": "Expression"
+									},
+									"UserName": {
+										"value": "@pipeline().parameters.UserName",
+										"type": "Expression"
+									},
+									"Password": {
+										"value": "@pipeline().parameters.Password",
+										"type": "Expression"
+									},
+									"TblName": {
+										"value": "@pipeline().parameters.SourceTBLName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Parameterized_Oracle_DS",
+								"type": "DatasetReference",
+								"parameters": {
+									"ServerName": {
+										"value": "@pipeline().parameters.ServerName",
+										"type": "Expression"
+									},
+									"DBName": {
+										"value": "@pipeline().parameters.DBName",
+										"type": "Expression"
+									},
+									"UserName": {
+										"value": "@pipeline().parameters.UserName",
+										"type": "Expression"
+									},
+									"Password": {
+										"value": "@pipeline().parameters.Password",
+										"type": "Expression"
+									},
+									"TblName": {
+										"value": "@pipeline().parameters.DestinationTBLName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"ServerName": {
+						"type": "String"
+					},
+					"DBName": {
+						"type": "String"
+					},
+					"UserName": {
+						"type": "String"
+					},
+					"Password": {
+						"type": "String"
+					},
+					"SourceTBLName": {
+						"type": "String"
+					},
+					"DestinationTBLName": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Pivot_dataflow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Pivot_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"FinancialYearSizeBands": {},
+									"PivotFinancialdata": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SpiltCondition_demo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SplitonDept",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SplitonDept",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmpDeptSCR": {},
+									"ITEmpRecords": {},
+									"ExecuteEmpDetails": {},
+									"PurchaseEmpdetails": {},
+									"ShippingeEmpdetails": {},
+									"SalesEmpdetails": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/UnionWindowPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WindowDF",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "WindowDF",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"ITEmployee": {},
+									"ExecuteEmployee": {},
+									"ShippingEmp": {},
+									"DeptWiseSalaryRank": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Check_empdept_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Exists_demo",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2020-05-11T02:15:00.000Z",
+						"endTime": "2020-05-12T02:15:00.000Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								8
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_trigger_Copy_Locations')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ParamterizedPipeline1",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"ServerName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName')]",
+							"DBName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName')]",
+							"UserName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName')]",
+							"Password": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password')]",
+							"SourceTBLName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName')]",
+							"DestinationTBLName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2020-05-11T09:03:00.000Z",
+						"endTime": "2020-05-12T09:03:00.000Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								15
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParamterizedPipeline1')]"
+			]
+		}
+	]
+}

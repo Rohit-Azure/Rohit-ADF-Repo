@@ -6,12 +6,89 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "df1203"
+		},
+		"Parameterized_Oracle_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Parameterized_Oracle_LS'"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_Oracle_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"ServerName": {
+						"type": "string"
+					},
+					"DBName": {
+						"type": "string"
+					},
+					"UserName": {
+						"type": "string"
+					},
+					"Password": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Oracle",
+				"typeProperties": {
+					"connectionString": "[parameters('Parameterized_Oracle_LS_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "OnpermisesSelfHostedIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Csv_file_Delimited_SRC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Ls_FileSystemSource",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "department.csv"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DEPARTMENT_ID",
+						"type": "String"
+					},
+					{
+						"name": "DEPARTMENT_NAME     ",
+						"type": "String"
+					},
+					{
+						"name": "MANAGER_ID",
+						"type": "String"
+					},
+					{
+						"name": "LOCATION_ID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Dept_SRC')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
@@ -30,6 +107,68 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_Oracle_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Parameterized_Oracle_LS",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"ServerName": {
+							"value": "@dataset().ServerName",
+							"type": "Expression"
+						},
+						"DBName": {
+							"value": "@dataset().DBName",
+							"type": "Expression"
+						},
+						"UserName": {
+							"value": "@dataset().UserName",
+							"type": "Expression"
+						},
+						"Password": {
+							"value": "@dataset().Password",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"ServerName": {
+						"type": "String"
+					},
+					"DBName": {
+						"type": "String"
+					},
+					"UserName": {
+						"type": "String"
+					},
+					"Password": {
+						"type": "String"
+					},
+					"TblName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "OracleTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().DBName",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TblName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Parameterized_Oracle_LS')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/SRC_TBL_EMP')]",
@@ -247,6 +386,41 @@
 						}
 					],
 					"script": "source(output(\n\t\tEMPLOYEE_ID as integer,\n\t\tFIRST_NAME as string,\n\t\tLAST_NAME as string,\n\t\tEMAIL as string,\n\t\tPHONE_NUMBER as string,\n\t\tHIRE_DATE as date,\n\t\tJOB_ID as string,\n\t\tSALARY as decimal(10,0),\n\t\tCOMMISSION_PCT as decimal(10,0),\n\t\tMANAGER_ID as integer,\n\t\tDEPARTMENT_ID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> EmpSCR\nsource(output(\n\t\tDEPARTMENT_ID as integer,\n\t\tDEPARTMENT_NAME as string,\n\t\tMANAGER_ID as integer,\n\t\tLOCATION_ID as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> DeptSCR\nEmpSCR, DeptSCR join(EmpSCR@DEPARTMENT_ID == DeptSCR@DEPARTMENT_ID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinEmpDept\nJoinEmpDept select(mapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tEMAIL,\n\t\tPHONE_NUMBER,\n\t\tHIRE_DATE,\n\t\tJOB_ID,\n\t\tSALARY,\n\t\tCOMMISSION_PCT,\n\t\tMANAGER_ID = EmpSCR@MANAGER_ID,\n\t\tDEPARTMENT_ID = EmpSCR@DEPARTMENT_ID,\n\t\tDEPARTMENT_NAME,\n\t\tLOCATION_ID\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 derive(COMMISSION_PCT = iifNull(COMMISSION_PCT, 10)) ~> DerivedCommissionVal\nDerivedCommissionVal sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['EmpDept_Details.csv'],\n\tmapColumn(\n\t\tEMPLOYEE_ID,\n\t\tFIRST_NAME,\n\t\tLAST_NAME,\n\t\tEMAIL,\n\t\tPHONE_NUMBER,\n\t\tHIRE_DATE,\n\t\tJOB_ID,\n\t\tSALARY,\n\t\tCOMMISSION_PCT,\n\t\tMANAGER_ID,\n\t\tDEPARTMENT_ID,\n\t\tDEPARTMENT_NAME,\n\t\tLOCATION_ID\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> EmpDeptTraget"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Input_data_SCR",
+								"type": "DatasetReference"
+							},
+							"name": "FinancialYearSizeBands"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Output_ADL_Target_DS",
+								"type": "DatasetReference"
+							},
+							"name": "PivotFinancialdata"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Pivot1"
+						}
+					],
+					"script": "source(output(\n\t\tyear as integer,\n\t\tindustry_code_ANZSIC as string,\n\t\tindustry_name_ANZSIC as string,\n\t\trme_size_grp as string,\n\t\tvariable as string,\n\t\tvalue as integer,\n\t\tunit as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> FinancialYearSizeBands\nFinancialYearSizeBands pivot(groupBy(industry_name_ANZSIC),\n\tpivotBy(variable),\n\tSum_of_Variable = sum(value),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1\nPivot1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Pivot_Financial_data'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PivotFinancialdata"
 				}
 			},
 			"dependsOn": []
@@ -672,6 +846,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Csv_file_Delimited_SRC')]",
 				"[concat(variables('factoryId'), '/datasets/deptOracleDB_DESTN')]"
 			]
 		},
@@ -759,309 +934,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/Join_Emp_Dept_DF')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ORCL_DB_TO_ADLS')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "DB_TO_ADLS",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "OracleSource",
-								"partitionOption": "None",
-								"queryTimeout": "02:00:00"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"name": "EMPLOYEE_ID",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "EMPLOYEE_ID",
-											"type": "Decimal"
-										}
-									},
-									{
-										"source": {
-											"name": "FIRST_NAME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "FIRST_NAME",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"name": "LAST_NAME",
-											"type": "String"
-										},
-										"sink": {
-											"name": "LAST_NAME",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"name": "EMAIL",
-											"type": "String"
-										},
-										"sink": {
-											"name": "EMAIL",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"name": "PHONE_NUMBER",
-											"type": "String"
-										},
-										"sink": {
-											"name": "PHONE_NUMBER",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"name": "HIRE_DATE",
-											"type": "DateTime"
-										},
-										"sink": {
-											"name": "HIRE_DATE",
-											"type": "DateTime"
-										}
-									},
-									{
-										"source": {
-											"name": "JOB_ID",
-											"type": "String"
-										},
-										"sink": {
-											"name": "JOB_ID",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"name": "SALARY",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "SALARY",
-											"type": "Decimal"
-										}
-									},
-									{
-										"source": {
-											"name": "COMMISSION_PCT",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "COMMISSION_PCT",
-											"type": "Decimal"
-										}
-									},
-									{
-										"source": {
-											"name": "MANAGER_ID",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "MANAGER_ID",
-											"type": "Decimal"
-										}
-									},
-									{
-										"source": {
-											"name": "DEPARTMENT_ID",
-											"type": "Decimal"
-										},
-										"sink": {
-											"name": "DEPARTMENT_ID",
-											"type": "Decimal"
-										}
-									}
-								]
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "SRC_TBL_EMP",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "Employee_details",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SRC_TBL_EMP')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SpiltCondition_demo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "SplitonDept",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SplitonDept",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"EmpDeptSCR": {},
-									"ITEmpRecords": {},
-									"ExecuteEmpDetails": {},
-									"PurchaseEmpdetails": {},
-									"ShippingeEmpdetails": {},
-									"SalesEmpdetails": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/SplitonDept')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/UnionWindowPipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "WindowDF",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "WindowDF",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"ITEmployee": {},
-									"ExecuteEmployee": {},
-									"ShippingEmp": {},
-									"DeptWiseSalaryRank": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/WindowDF')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Check_empdept_trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Exists_demo",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2020-05-11T02:15:00.000Z",
-						"endTime": "2020-05-12T02:15:00.000Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"minutes": [
-								0
-							],
-							"hours": [
-								8
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Exists_demo')]"
 			]
 		}
 	]

@@ -35,6 +35,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'Ls_oracledb_source'"
 		},
+		"Parameterized_Oracle_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Parameterized_Oracle_LS'"
+		},
 		"LS_AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://gen2storage1203.dfs.core.windows.net"
@@ -50,6 +54,30 @@
 		"Ls_FileSystemSource_properties_typeProperties_userId": {
 			"type": "string",
 			"defaultValue": "rrohitjain12@gmail.com"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName": {
+			"type": "string",
+			"defaultValue": "localhost"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName": {
+			"type": "string",
+			"defaultValue": "XE"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName": {
+			"type": "string",
+			"defaultValue": "HR"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password": {
+			"type": "string",
+			"defaultValue": "rohit123"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS_ADF"
 		},
 		"containerUri": {
 			"type": "string",
@@ -128,11 +156,52 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"Parameterized_Oracle_LS_connectionString": {
+						"value": "[parameters('Parameterized_Oracle_LS_connectionString')]"
 					}
 				}
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName')]"
+					},
+					"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName": {
+						"value": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ArmTemplate_1')]"
 			]
 		}
 	]

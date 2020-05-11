@@ -35,6 +35,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'Ls_oracledb_source'"
 		},
+		"Parameterized_Oracle_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Parameterized_Oracle_LS'"
+		},
 		"LS_AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://gen2storage1203.dfs.core.windows.net"
@@ -50,6 +54,30 @@
 		"Ls_FileSystemSource_properties_typeProperties_userId": {
 			"type": "string",
 			"defaultValue": "rrohitjain12@gmail.com"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName": {
+			"type": "string",
+			"defaultValue": "localhost"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName": {
+			"type": "string",
+			"defaultValue": "XE"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName": {
+			"type": "string",
+			"defaultValue": "HR"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password": {
+			"type": "string",
+			"defaultValue": "rohit123"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName": {
+			"type": "string",
+			"defaultValue": "LOCATIONS_ADF"
 		}
 	},
 	"variables": {
@@ -628,6 +656,171 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ParamterizedPipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CopyDataFromOneTBLtoAnother",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "DB_TableLocations"
+							},
+							{
+								"name": "Destination",
+								"value": "DB_Table_LOCATIONS_ADF"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "OracleSource",
+								"partitionOption": "None",
+								"queryTimeout": "02:00:00"
+							},
+							"sink": {
+								"type": "OracleSink",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "Parameterized_Oracle_DS",
+								"type": "DatasetReference",
+								"parameters": {
+									"ServerName": {
+										"value": "@pipeline().parameters.ServerName",
+										"type": "Expression"
+									},
+									"DBName": {
+										"value": "@pipeline().parameters.DBName",
+										"type": "Expression"
+									},
+									"UserName": {
+										"value": "@pipeline().parameters.UserName",
+										"type": "Expression"
+									},
+									"Password": {
+										"value": "@pipeline().parameters.Password",
+										"type": "Expression"
+									},
+									"TblName": {
+										"value": "@pipeline().parameters.SourceTBLName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Parameterized_Oracle_DS",
+								"type": "DatasetReference",
+								"parameters": {
+									"ServerName": {
+										"value": "@pipeline().parameters.ServerName",
+										"type": "Expression"
+									},
+									"DBName": {
+										"value": "@pipeline().parameters.DBName",
+										"type": "Expression"
+									},
+									"UserName": {
+										"value": "@pipeline().parameters.UserName",
+										"type": "Expression"
+									},
+									"Password": {
+										"value": "@pipeline().parameters.Password",
+										"type": "Expression"
+									},
+									"TblName": {
+										"value": "@pipeline().parameters.DestinationTBLName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"ServerName": {
+						"type": "String"
+					},
+					"DBName": {
+						"type": "String"
+					},
+					"UserName": {
+						"type": "String"
+					},
+					"Password": {
+						"type": "String"
+					},
+					"SourceTBLName": {
+						"type": "String"
+					},
+					"DestinationTBLName": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Parameterized_Oracle_DS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Pivot_dataflow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Pivot_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"FinancialYearSizeBands": {},
+									"PivotFinancialdata": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Pivot_dataflow')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SpiltCondition_demo')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1168,6 +1361,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Input_data_SCR')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "annual-enterprise-survey-2018-financial-year-provisional-size-bands-csv.csv",
+						"folderPath": "Input_Source",
+						"fileSystem": "gen2blobcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "year",
+						"type": "String"
+					},
+					{
+						"name": "industry_code_ANZSIC",
+						"type": "String"
+					},
+					{
+						"name": "industry_name_ANZSIC",
+						"type": "String"
+					},
+					{
+						"name": "rme_size_grp",
+						"type": "String"
+					},
+					{
+						"name": "variable",
+						"type": "String"
+					},
+					{
+						"name": "value",
+						"type": "String"
+					},
+					{
+						"name": "unit",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Output_ADL_Target_DS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1193,6 +1444,68 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Ls_DLStorage_Gen2_output')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_Oracle_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Parameterized_Oracle_LS",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"ServerName": {
+							"value": "@dataset().ServerName",
+							"type": "Expression"
+						},
+						"DBName": {
+							"value": "@dataset().DBName",
+							"type": "Expression"
+						},
+						"UserName": {
+							"value": "@dataset().UserName",
+							"type": "Expression"
+						},
+						"Password": {
+							"value": "@dataset().Password",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"ServerName": {
+						"type": "String"
+					},
+					"DBName": {
+						"type": "String"
+					},
+					"UserName": {
+						"type": "String"
+					},
+					"Password": {
+						"type": "String"
+					},
+					"TblName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "OracleTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().DBName",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TblName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Parameterized_Oracle_LS')]"
 			]
 		},
 		{
@@ -1622,6 +1935,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_Oracle_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"ServerName": {
+						"type": "string"
+					},
+					"DBName": {
+						"type": "string"
+					},
+					"UserName": {
+						"type": "string"
+					},
+					"Password": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Oracle",
+				"typeProperties": {
+					"connectionString": "[parameters('Parameterized_Oracle_LS_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "OnpermisesSelfHostedIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/OnpermisesSelfHostedIR')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Check_empdept_trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -1658,6 +2004,52 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Exists_demo')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parameterized_trigger_Copy_Locations')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ParamterizedPipeline1",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"ServerName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName')]",
+							"DBName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName')]",
+							"UserName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName')]",
+							"Password": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password')]",
+							"SourceTBLName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName')]",
+							"DestinationTBLName": "[parameters('Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2020-05-11T09:03:00.000Z",
+						"endTime": "2020-05-12T09:03:00.000Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								15
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ParamterizedPipeline1')]"
 			]
 		},
 		{
@@ -1824,6 +2216,44 @@
 				"[concat(variables('factoryId'), '/datasets/Employee_details')]",
 				"[concat(variables('factoryId'), '/datasets/DEP_SCR_ADLS')]",
 				"[concat(variables('factoryId'), '/datasets/Empdept_target')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Input_data_SCR",
+								"type": "DatasetReference"
+							},
+							"name": "FinancialYearSizeBands"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Output_ADL_Target_DS",
+								"type": "DatasetReference"
+							},
+							"name": "PivotFinancialdata"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Pivot1"
+						}
+					],
+					"script": "source(output(\n\t\tyear as integer,\n\t\tindustry_code_ANZSIC as string,\n\t\tindustry_name_ANZSIC as string,\n\t\trme_size_grp as string,\n\t\tvariable as string,\n\t\tvalue as integer,\n\t\tunit as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpreferredIntegralType: 'integer',\n\tpreferredFractionalType: 'decimal') ~> FinancialYearSizeBands\nFinancialYearSizeBands pivot(groupBy(industry_name_ANZSIC),\n\tpivotBy(variable),\n\tSum_of_Variable = sum(value),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot1\nPivot1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Pivot_Financial_data'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> PivotFinancialdata"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_data_SCR')]",
+				"[concat(variables('factoryId'), '/datasets/Output_ADL_Target_DS')]"
 			]
 		},
 		{

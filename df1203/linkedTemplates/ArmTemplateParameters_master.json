@@ -26,6 +26,9 @@
 		"Ls_oracledb_source_connectionString": {
 			"value": ""
 		},
+		"Parameterized_Oracle_LS_connectionString": {
+			"value": ""
+		},
 		"LS_AzureDataLakeStorage1_properties_typeProperties_url": {
 			"value": "https://gen2storage1203.dfs.core.windows.net"
 		},
@@ -37,6 +40,24 @@
 		},
 		"Ls_FileSystemSource_properties_typeProperties_userId": {
 			"value": "rrohitjain12@gmail.com"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_ServerName": {
+			"value": "localhost"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DBName": {
+			"value": "XE"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_UserName": {
+			"value": "HR"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_Password": {
+			"value": "rohit123"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_SourceTBLName": {
+			"value": "LOCATIONS"
+		},
+		"Parameterized_trigger_Copy_Locations_properties_ParamterizedPipeline1_parameters_DestinationTBLName": {
+			"value": "LOCATIONS_ADF"
 		},
 		"containerUri": {
 			"value": ""
